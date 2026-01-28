@@ -1,5 +1,5 @@
-#TODO: Test the new system prompt to prevent overgeneration of intermediary responses
-#TODO: Implement the absolute mode prompt?
+#TODO: Implement a token-counting system for requests to see how many tokens are consumed and are paid for - look into anthropic's internal tools for API limiting/token counting
+#TODO: Research limitations/issues of memory tool when it comes to dealing with large-scale data
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
@@ -259,7 +259,7 @@ if __name__ == "__main__":
     
     
     # === Многопоточная обработка ===
-    max_workers = 10  # 5 threads
+    max_workers = 10  # 10 threads
     total_start = time.time()
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
