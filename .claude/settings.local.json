@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(dir /B C:UserssaakiDesktopRConfClaude_digitial_profile*.py)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(curl:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker exec:*)"
     ]
   }
 }

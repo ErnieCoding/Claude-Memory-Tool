@@ -1,0 +1,7 @@
+# Игнорировать все содержимое storage директорий
+user_files/*
+responses/*
+
+# Но сохранить сами директории
+!user_files/.gitkeep
+!responses/.gitkeep

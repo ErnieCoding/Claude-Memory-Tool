@@ -1,14 +1,75 @@
-# Папки с мета данными
-tests/
-transcripts/
-memory/
-
-# env
-.env
-
-# venv
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
 
-# other
-__pycache__
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# Storage (новая структура)
+storage/user_files/*
+storage/responses/*
+!storage/user_files/.gitkeep
+!storage/responses/.gitkeep
+
+# Storage (старая структура, если осталась)
+backend/storage/user_files/*
+backend/storage/responses/*
+!backend/storage/user_files/.gitkeep
+!backend/storage/responses/.gitkeep
+
+# Old project structure
+memory/
+transcripts/
+tests/
 reports/
+
+# Logs
+*.log
+logs/
+
+# Docker
+docker-compose.override.yml
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
