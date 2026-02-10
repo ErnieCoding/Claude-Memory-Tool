@@ -5,7 +5,7 @@
 ### 1. Клонируйте репозиторий
 ```bash
 git clone <repo-url>
-cd Claude_digitial_profile
+cd Claude-Memory-Tool
 ```
 
 ### 2. Настройте API ключ
