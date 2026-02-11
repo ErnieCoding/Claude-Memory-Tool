@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
-from .config import Config
-from .api.routes import api_bp
+from config import Config
+from api.routes import api_bp
 import logging
 
 # Настройка логирования

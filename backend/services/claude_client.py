@@ -2,8 +2,8 @@ from anthropic import Anthropic
 from anthropic.types.beta import BetaMessageParam
 from typing import List, Dict, Any
 from pathlib import Path
-from .memory_tool import MemoryTool, SYSTEM_PROMPT
-from ..config import Config
+from services.memory_tool import MemoryTool, SYSTEM_PROMPT
+from config import Config
 
 
 class ClaudeClient:
@@ -97,3 +97,64 @@ class ClaudeClient:
                     "modified": file_path.stat().st_mtime
                 })
         return sorted(files, key=lambda x: x['modified'], reverse=True)
+
+    def process_query_stream(self, query: str, max_tokens: int = 8000):
+        """
+        Streaming версия обработки запроса с поддержкой MemoryTool
+
+        Args:
+            query: Запрос пользователя
+            max_tokens: Максимальное количество токенов для ответа
+
+        Yields:
+            Словари с частями ответа или ошибками
+        """
+        messages: List[BetaMessageParam] = [
+            {
+                "role": "user",
+                "content": query
+            }
+        ]
+
+        try:
+            # Используем stream с MemoryTool
+            with self.client.beta.messages.stream(
+                model=self.model,
+                max_tokens=max_tokens,
+                messages=messages,
+                system=SYSTEM_PROMPT,
+                betas=self.betas,
+                tools=[self.memory_tool]
+            ) as stream:
+                for event in stream:
+                    # Обрабатываем различные типы событий
+                    if hasattr(event, 'type'):
+                        if event.type == 'content_block_delta':
+                            if hasattr(event, 'delta') and hasattr(event.delta, 'text'):
+                                yield {
+                                    "type": "text_delta",
+                                    "text": event.delta.text
+                                }
+                        elif event.type == 'message_start':
+                            yield {
+                                "type": "message_start"
+                            }
+                        elif event.type == 'message_stop':
+                            yield {
+                                "type": "message_stop"
+                            }
+
+                # Отправляем финальное использование токенов
+                final_message = stream.get_final_message()
+                if hasattr(final_message, 'usage'):
+                    yield {
+                        "type": "usage",
+                        "input_tokens": final_message.usage.input_tokens,
+                        "output_tokens": final_message.usage.output_tokens
+                    }
+
+        except Exception as e:
+            yield {
+                "type": "error",
+                "error": str(e)
+            }

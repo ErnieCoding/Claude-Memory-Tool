@@ -1,17 +1,19 @@
-# Claude Memory Tool 
+# Claude Memory Tool
 
-# Быстрый запуск
+Веб-приложение для работы с Claude AI с поддержкой расширенного контекста (1M токенов) и Memory Tool для чтения файлов и создания ответов.
+
+## Быстрый запуск
 
 ### 1. Клонируйте репозиторий
 ```bash
 git clone <repo-url>
-cd Claude_digitial_profile
+cd Claude-Memory-Tool
 ```
 
 ### 2. Настройте API ключ
 ```bash
-# Отредактируйте .env и вставьте ваш API ключ от Anthropic
-# CLAUDE_API=your-api-key-here
+# Создайте файл .env и вставьте ваш API ключ от Anthropic
+echo "CLAUDE_API=your-api-key-here" > .env
 ```
 
 ### 3. Создайте папки для данных
@@ -20,8 +22,14 @@ mkdir -p storage/user_files storage/responses
 ```
 
 ### 4. Запуск
+
 ```bash
 docker-compose up -d --build
+```
+
+**Development**
+```bash
+docker-compose -f docker-compose.dev.yml up --build
 ```
 
 ## Где хранятся данные?
@@ -83,10 +91,14 @@ docker-compose up -d --build
 - `POST /api/query` - Отправка запроса Claude
   ```json
   {
-    "query": "Ваш вопрос",
+    "query": "",
     "max_tokens": 8000
   }
   ```
+
+- `POST /api/query/stream` - Отправка запроса Claude (streaming)
+  - Возвращает Server-Sent Events (SSE)
+  - Тот же формат body что и `/api/query`
 
 ### Ответы
 - `GET /api/responses` - Список сохранённых ответов
@@ -121,34 +133,3 @@ docker-compose up -d --build
 Claude имеет доступ к двум директориям:
 - `/user_files/` - загруженные файлы (только чтение)
 - `/responses/` - результаты (чтение и запись)
-
----
-
-## Конфигурация
-
-### Переменные окружения
-
-В файле `.env`:
-
-```bash
-# Обязательно
-CLAUDE_API=...
-
-# значения по умолчанию
-FLASK_HOST=0.0.0.0
-FLASK_PORT=5000
-FLASK_DEBUG=False
-```
-
-### Модель и лимиты
-
-В `backend/config.py`:
-
-```python
-CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
-CLAUDE_BETAS = [
-    "context-1m-2025-08-07",           # Расширенный контекст 1 миллион токенов
-    "context-management-2025-06-27"    # Управление контекстом
-]
-ALLOWED_EXTENSIONS = {'.json', '.txt', '.xml', '.pdf', '.csv', '.xlsx', '.xls'}
-```

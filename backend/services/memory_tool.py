@@ -9,7 +9,7 @@ from anthropic.types.beta import (
 )
 from typing_extensions import override
 from pathlib import Path
-from .file_processor import FileProcessor
+from services.file_processor import FileProcessor
 
 
 SYSTEM_PROMPT = """Правила работы с memory tool:

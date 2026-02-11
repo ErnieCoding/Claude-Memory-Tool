@@ -1,11 +1,10 @@
 from flask import Blueprint, request, jsonify, Response, stream_with_context
 from werkzeug.utils import secure_filename
 from pathlib import Path
-import json
 import shutil
-from ..config import Config
-from ..services.claude_client import ClaudeClient
-from ..services.file_processor import FileProcessor
+import json
+from config import Config
+from services.claude_client import ClaudeClient
 
 api_bp = Blueprint('api', __name__)
 
@@ -46,8 +45,20 @@ def upload_files():
             if file.filename == '':
                 continue
 
+            # Проверка размера файла
+            file.seek(0, 2)  # Переход в конец файла
+            file_size = file.tell()
+            file.seek(0)  # Возврат в начало
+
+            if file_size > Config.MAX_FILE_SIZE:
+                return jsonify({
+                    "error": f"Файл {file.filename} слишком большой. "
+                            f"Максимальный размер: {Config.MAX_FILE_SIZE / (1024*1024):.0f}MB"
+                }), 400
+
             relative_path = request.form.get(f'path_{file.filename}', '')
 
+            # Безопасная обработка имени файла
             filename = secure_filename(file.filename)
             file_ext = Path(filename).suffix.lower()
 
@@ -57,10 +68,20 @@ def upload_files():
                             f"Разрешены: {', '.join(Config.ALLOWED_EXTENSIONS)}"
                 }), 400
 
+            # Безопасная обработка относительного пути
             if relative_path:
-                file_path = Config.USER_FILES_DIR / relative_path / filename
+                # Используем secure_filename для каждой части пути
+                safe_parts = [secure_filename(part) for part in relative_path.split('/') if part]
+                safe_relative_path = Path(*safe_parts) if safe_parts else Path('.')
+                file_path = Config.USER_FILES_DIR / safe_relative_path / filename
             else:
                 file_path = Config.USER_FILES_DIR / filename
+
+            # CRITICAL: Проверка path traversal
+            try:
+                file_path.resolve().relative_to(Config.USER_FILES_DIR.resolve())
+            except ValueError:
+                return jsonify({"error": "Недопустимый путь к файлу"}), 400
 
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -78,6 +99,8 @@ def upload_files():
             "files": uploaded_files
         }), 200
 
+    except ValueError as e:
+        return jsonify({"error": "Недопустимый путь"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -159,6 +182,41 @@ def process_query():
             })
         else:
             return jsonify({"error": result.get('error', 'Unknown error')}), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api_bp.route('/query/stream', methods=['POST'])
+def process_query_stream():
+    """
+    Обработка запроса пользователя (streaming версия)
+    Body: {"query": "string", "max_tokens": int (optional)}
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'query' not in data:
+            return jsonify({"error": "Запрос не указан"}), 400
+
+        query = data['query']
+        max_tokens = data.get('max_tokens', 8000)
+
+        client = init_claude_client()
+
+        def generate():
+            for event in client.process_query_stream(query, max_tokens):
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+        return Response(
+            stream_with_context(generate()),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',
+                'Connection': 'keep-alive'
+            }
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -3,33 +3,28 @@ services:
     build:
       context: .
       dockerfile: docker/backend.Dockerfile
-    container_name: claude-memory-backend
+    container_name: claude-memory-backend-dev
+    command: ["python", "app.py"]  # Flask dev server
     environment:
       - CLAUDE_API=${CLAUDE_API}
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=5000
-      - FLASK_DEBUG=False
-      # Gunicorn configuration
-      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
-      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-1200}
+      - FLASK_DEBUG=True  # Development mode
     volumes:
+      - ./backend:/app  # Hot reload для разработки
       - ./storage/user_files:/app/storage/user_files
       - ./storage/responses:/app/storage/responses
+    ports:
+      - "5000:5000"  # Прямой доступ к backend для разработки
     networks:
       - app-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   frontend:
     build:
       context: .
       dockerfile: docker/frontend.Dockerfile
-    container_name: claude-memory-frontend
+    container_name: claude-memory-frontend-dev
     ports:
       - "80:80"
     depends_on:
