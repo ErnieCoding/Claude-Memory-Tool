@@ -75,10 +75,8 @@ export default {
       this.processingStatus = 'Генерация ответа...';
 
       try {
-        // Используем обычный POST запрос (без streaming)
         const result = await api.sendQuery(query);
 
-        // Устанавливаем результат
         this.response = result.response;
         this.usage = result.usage;
 
@@ -91,8 +89,6 @@ export default {
     },
 
     handleStopProcessing() {
-      // В синхронном режиме нельзя отменить запрос
-      // Можно добавить поддержку отмены через AbortController если нужно
       this.isProcessing = false;
     },
 

@@ -7,7 +7,7 @@ load_dotenv()
 class Config:
     # Claude API
     CLAUDE_API_KEY = os.getenv("CLAUDE_API")
-    CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
+    CLAUDE_MODEL = "claude-sonnet-4-6"  #"claude-sonnet-4-5-20250929"
     CLAUDE_BETAS = ["context-1m-2025-08-07", "context-management-2025-06-27"]
 
     # Storage paths

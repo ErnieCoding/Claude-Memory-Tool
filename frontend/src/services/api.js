@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-// В production используем относительный путь через nginx proxy
-// В dev режиме можно указать VITE_API_URL в .env
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
@@ -61,20 +59,7 @@ export default {
     });
     return response.data;
   },
-
-  createQueryStream(query, maxTokens = 8000) {
-    return fetch(`${API_BASE_URL}/query/stream`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        max_tokens: maxTokens
-      })
-    });
-  },
-
+  
   async listResponses() {
     const response = await api.get('/responses');
     return response.data;
