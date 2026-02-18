@@ -178,7 +178,8 @@ def process_query():
         if result.get('success'):
             return jsonify({
                 "response": result['text'],
-                "usage": result['usage']
+                "usage": result['usage'],
+                "created_files": result.get('created_files', [])
             })
         else:
             return jsonify({"error": result.get('error', 'Unknown error')}), 500

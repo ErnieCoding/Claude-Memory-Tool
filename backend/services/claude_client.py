@@ -24,6 +24,9 @@ class ClaudeClient:
         Returns:
             Словарь с результатом обработки
         """
+        # Запоминаем файлы ДО выполнения запроса
+        files_before = self._get_response_file_paths()
+
         messages: List[BetaMessageParam] = [
             {
                 "role": "user",
@@ -52,13 +55,21 @@ class ClaudeClient:
                 if hasattr(message, 'usage'):
                     last_usage = message.usage
 
+            # Определяем новые файлы ПОСЛЕ выполнения запроса
+            files_after = self._get_response_file_paths()
+            created_files = [f for f in files_after if f not in files_before]
+
+            # Фильтруем progress.txt из списка созданных файлов
+            created_files = [f for f in created_files if not f['name'].lower() == 'progress.txt']
+
             return {
                 "success": True,
                 "text": final_text,
                 "usage": {
                     "input_tokens": last_usage.input_tokens if last_usage else 0,
                     "output_tokens": last_usage.output_tokens if last_usage else 0
-                }
+                },
+                "created_files": created_files
             }
 
         except Exception as e:
@@ -66,6 +77,20 @@ class ClaudeClient:
                 "success": False,
                 "error": str(e)
             }
+
+    def _get_response_file_paths(self) -> List[Dict[str, Any]]:
+        """Вспомогательный метод для получения списка файлов в responses"""
+        files = []
+        for file_path in self.memory_tool.responses_dir.rglob("*"):
+            if file_path.is_file() and not file_path.name.startswith("."):
+                rel_path = file_path.relative_to(self.memory_tool.responses_dir)
+                files.append({
+                    "name": file_path.name,
+                    "path": str(rel_path),
+                    "size": file_path.stat().st_size,
+                    "modified": file_path.stat().st_mtime
+                })
+        return files
 
     def get_available_files(self) -> List[Dict[str, Any]]:
         """Возвращает список доступных файлов в user_files"""

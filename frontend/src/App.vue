@@ -24,15 +24,26 @@
 
             <div class="spacer"></div>
 
-            <ResponseViewer
-              :response="response"
-              :isProcessing="isProcessing"
-              :processingStatus="processingStatus"
-              :error="error"
-              :usage="usage"
-              @clear-response="clearResponse"
-              @load-response="loadResponse"
-            />
+            <!-- Контейнер для ResponseViewer и CreatedFiles -->
+            <div class="response-container" :class="{ 'with-sidebar': createdFiles.length > 0 && !isProcessing }">
+              <ResponseViewer
+                :response="response"
+                :isProcessing="isProcessing"
+                :processingStatus="processingStatus"
+                :error="error"
+                :usage="usage"
+                @clear-response="clearResponse"
+                @load-response="loadResponse"
+              />
+
+              <!-- Боковая панель с созданными файлами -->
+              <CreatedFiles
+                v-if="createdFiles.length > 0 && !isProcessing"
+                :files="createdFiles"
+                :isProcessing="isProcessing"
+                @load-file="loadCreatedFile"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -44,6 +55,7 @@
 import FileUploader from './components/FileUploader.vue';
 import QueryInput from './components/QueryInput.vue';
 import ResponseViewer from './components/ResponseViewer.vue';
+import CreatedFiles from './components/CreatedFiles.vue';
 import api from './services/api';
 
 export default {
@@ -51,7 +63,8 @@ export default {
   components: {
     FileUploader,
     QueryInput,
-    ResponseViewer
+    ResponseViewer,
+    CreatedFiles
   },
   data() {
     return {
@@ -59,7 +72,8 @@ export default {
       processingStatus: 'Генерация ответа...',
       response: '',
       error: '',
-      usage: null
+      usage: null,
+      createdFiles: []
     };
   },
   methods: {
@@ -72,6 +86,7 @@ export default {
       this.response = '';
       this.error = '';
       this.usage = null;
+      this.createdFiles = [];
       this.processingStatus = 'Генерация ответа...';
 
       try {
@@ -79,6 +94,7 @@ export default {
 
         this.response = result.response;
         this.usage = result.usage;
+        this.createdFiles = result.created_files || [];
 
       } catch (error) {
         this.error = 'Ошибка: ' + (error.response?.data?.error || error.message);
@@ -96,11 +112,23 @@ export default {
       this.response = '';
       this.error = '';
       this.usage = null;
+      this.createdFiles = [];
     },
 
     loadResponse(content) {
       this.response = content;
       this.error = '';
+    },
+
+    async loadCreatedFile(filepath) {
+      try {
+        const result = await api.getResponse(filepath);
+        this.response = result.content;
+        this.error = '';
+      } catch (error) {
+        this.error = 'Ошибка загрузки файла: ' + (error.response?.data?.error || error.message);
+        console.error('Load file error:', error);
+      }
     }
   }
 };
@@ -160,6 +188,17 @@ body {
   gap: 24px;
 }
 
+.response-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.response-container > *:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
 .grid-item {
   display: flex;
   flex-direction: column;
@@ -182,6 +221,10 @@ body {
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .response-container {
+    flex-direction: column;
   }
 }
 
