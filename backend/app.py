@@ -4,7 +4,6 @@ from config import Config
 from api.routes import api_bp
 import logging
 
-# Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -17,7 +16,6 @@ def create_app():
 
     app = Flask(__name__)
 
-    # Включаем CORS для всех доменов (в production нужно ограничить)
     CORS(app, resources={
         r"/api/*": {
             "origins": "*",
