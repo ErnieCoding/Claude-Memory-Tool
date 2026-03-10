@@ -16,6 +16,9 @@ def create_app():
 
     app = Flask(__name__)
 
+    # Увеличиваем максимальный размер запроса для Flask
+    app.config['MAX_CONTENT_LENGTH'] = Config.MAX_FILE_SIZE
+
     CORS(app, resources={
         r"/api/*": {
             "origins": "*",

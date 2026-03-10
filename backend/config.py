@@ -17,8 +17,8 @@ class Config:
     RESPONSES_DIR = STORAGE_DIR / "responses"
 
     # File upload settings
-    MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
-    ALLOWED_EXTENSIONS = {'.json', '.txt', '.xml', '.pdf', '.csv', '.xlsx', '.xls'}
+    MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
+    ALLOWED_EXTENSIONS = {'.json', '.txt', '.xml', '.pdf', '.csv', '.xlsx', '.xls', '.docx'}
 
     # Flask settings
     FLASK_HOST = os.getenv("FLASK_HOST", "0.0.0.0")

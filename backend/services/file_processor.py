@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union, List, Dict, Any
 import PyPDF2
 import pandas as pd
+from docx import Document
 
 
 class FileProcessor:
@@ -140,6 +141,45 @@ class FileProcessor:
             raise ValueError(f"Ошибка чтения Excel файла: {str(e)}")
 
     @staticmethod
+    def read_docx(file_path: Path) -> str:
+        """Читает DOCX файл и извлекает текст"""
+        try:
+            doc = Document(file_path)
+
+            # Извлекаем весь текст из параграфов
+            paragraphs = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    paragraphs.append(para.text)
+
+            # Извлекаем текст из таблиц
+            tables_content = []
+            for table_idx, table in enumerate(doc.tables):
+                table_data = []
+                for row in table.rows:
+                    row_data = [cell.text.strip() for cell in row.cells]
+                    table_data.append(row_data)
+
+                if table_data:
+                    tables_content.append({
+                        "table_number": table_idx + 1,
+                        "data": table_data
+                    })
+
+            result = {
+                "paragraphs": paragraphs,
+                "tables": tables_content if tables_content else None,
+                "metadata": {
+                    "total_paragraphs": len(doc.paragraphs),
+                    "total_tables": len(doc.tables)
+                }
+            }
+
+            return json.dumps(result, ensure_ascii=False, indent=2)
+        except Exception as e:
+            raise ValueError(f"Ошибка чтения DOCX файла: {str(e)}")
+
+    @staticmethod
     def process_file(file_path: Path) -> str:
         """
         Определяет тип файла и обрабатывает его соответствующим образом
@@ -160,6 +200,7 @@ class FileProcessor:
             '.csv': FileProcessor.read_csv,
             '.xlsx': FileProcessor.read_excel,
             '.xls': FileProcessor.read_excel,
+            '.docx': FileProcessor.read_docx,
         }
 
         processor = processors.get(suffix)

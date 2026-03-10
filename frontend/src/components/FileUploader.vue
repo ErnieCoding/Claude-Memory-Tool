@@ -14,14 +14,14 @@
           Перетащите файлы сюда или кликните для выбора
         </p>
         <p class="upload-hint">
-          Поддерживаемые форматы: JSON, TXT, XML, PDF, CSV, XLSX
+          Поддерживаемые форматы: JSON, TXT, XML, PDF, CSV, XLSX, DOCX
         </p>
         <input
           ref="fileInput"
           type="file"
           multiple
           @change="handleFileSelect"
-          accept=".json,.txt,.xml,.pdf,.csv,.xlsx,.xls"
+          accept=".json,.txt,.xml,.pdf,.csv,.xlsx,.xls,.docx"
           style="display: none;">
       </div>
 
@@ -137,7 +137,8 @@ export default {
         '.pdf': '📕',
         '.csv': '📊',
         '.xlsx': '📈',
-        '.xls': '📈'
+        '.xls': '📈',
+        '.docx': '📘'
       };
       return icons[extension] || '📄';
     },
