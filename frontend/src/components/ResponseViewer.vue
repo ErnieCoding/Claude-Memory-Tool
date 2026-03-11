@@ -25,6 +25,7 @@
 
         <div v-if="usage" class="usage-info">
           <span>Токены: {{ usage.input_tokens }} вход / {{ usage.output_tokens }} выход</span>
+          <span v-if="usage.elapsed_seconds !== undefined"> · {{ usage.elapsed_seconds }} с</span>
         </div>
       </div>
 

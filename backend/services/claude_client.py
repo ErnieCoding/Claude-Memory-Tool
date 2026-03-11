@@ -1,3 +1,4 @@
+import time
 from anthropic import Anthropic
 from anthropic.types.beta import BetaMessageParam
 from typing import List, Dict, Any
@@ -26,6 +27,7 @@ class ClaudeClient:
         """
         # Запоминаем файлы ДО выполнения запроса
         files_before = self._get_response_file_paths()
+        start_time = time.time()
 
         messages: List[BetaMessageParam] = [
             {
@@ -55,6 +57,8 @@ class ClaudeClient:
                 if hasattr(message, 'usage'):
                     last_usage = message.usage
 
+            elapsed_time = time.time() - start_time
+
             # Определяем новые файлы ПОСЛЕ выполнения запроса
             files_after = self._get_response_file_paths()
             created_files = [f for f in files_after if f not in files_before]
@@ -67,7 +71,8 @@ class ClaudeClient:
                 "text": final_text,
                 "usage": {
                     "input_tokens": last_usage.input_tokens if last_usage else 0,
-                    "output_tokens": last_usage.output_tokens if last_usage else 0
+                    "output_tokens": last_usage.output_tokens if last_usage else 0,
+                    "elapsed_seconds": round(elapsed_time, 1)
                 },
                 "created_files": created_files
             }
